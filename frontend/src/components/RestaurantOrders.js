@@ -1,91 +1,65 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import './RoomBooking.css';
+import './RestaurantOrders.css';
 
-function RoomBooking() {
-  const { roomId } = useParams();
-  const navigate = useNavigate();
-  const [room, setRoom] = useState(null);
-  const [checkInDate, setCheckInDate] = useState('');
-  const [checkOutDate, setCheckOutDate] = useState('');
+function RestaurantOrders() {
+  const [menuItems, setMenuItems] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
   const [totalCost, setTotalCost] = useState(0);
 
   useEffect(() => {
-    // Fetch room details
-    fetch(`http://localhost:5005/rooms/${roomId}`)
+    // Fetch menu items
+    fetch('http://localhost:5005/menu-items')
       .then(res => res.json())
-      .then(data => setRoom(data))
-      .catch(err => console.error('Error fetching room details:', err));
-  }, [roomId]);
+      .then(data => setMenuItems(data))
+      .catch(err => console.error('Error fetching menu items:', err));
+  }, []);
 
-  const handleBooking = async () => {
+  const handleOrder = async () => {
     const guestId = localStorage.getItem('guestId');
     if (!guestId) {
-      alert('Please log in to book a room');
-      return;
-    }
-
-    if (!checkInDate || !checkOutDate) {
-      alert('Please select both check-in and check-out dates');
+      alert('Please log in to place an order');
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:5005/book-room', {
+      const response = await fetch('http://localhost:5005/place-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ guestId, roomId, checkInDate, checkOutDate, totalCost }),
+        body: JSON.stringify({ guestId, menuItemId: selectedItem.MenuItemID, orderDate: new Date().toISOString().split('T')[0], totalCost }),
       });
       const data = await response.json();
-      if (data.bookingId) {
-        alert('Room booked successfully');
-        navigate('/guest'); // Redirect to the guest dashboard after successful booking
+      if (data.orderId) {
+        alert('Order placed successfully');
       } else {
-        alert('Failed to book room');
+        alert('Failed to place order');
       }
     } catch (err) {
-      console.error('Error during booking:', err);
-      alert('An error occurred during booking');
+      console.error('Error during order placement:', err);
+      alert('An error occurred during order placement');
     }
   };
 
-  useEffect(() => {
-    if (room && checkInDate && checkOutDate) {
-      const checkIn = new Date(checkInDate);
-      const checkOut = new Date(checkOutDate);
-      const days = (checkOut - checkIn) / (1000 * 60 * 60 * 24);
-      if (days > 0) {
-        setTotalCost(days * room.PricePerNight);
-      } else {
-        setTotalCost(0);
-      }
-    }
-  }, [room, checkInDate, checkOutDate]);
-
   return (
     <div className="container">
-      {room && (
+      <h2>Order from Restaurant</h2>
+      <ul>
+        {menuItems.map(item => (
+          <li key={item.MenuItemID} onClick={() => { setSelectedItem(item); setTotalCost(item.Price); }}>
+            {item.ItemName} - ${item.Price}
+          </li>
+        ))}
+      </ul>
+      {selectedItem && (
         <>
-          <h2>Book Room: {room.RoomType}</h2>
-          <p>Price per Night: ${room.PricePerNight}</p>
-          <input
-            type="date"
-            value={checkInDate}
-            onChange={(e) => setCheckInDate(e.target.value)}
-          />
-          <input
-            type="date"
-            value={checkOutDate}
-            onChange={(e) => setCheckOutDate(e.target.value)}
-          />
+          <h3>Selected Item: {selectedItem.ItemName}</h3>
           <p>Total Cost: ${totalCost}</p>
-          <button onClick={handleBooking}>Book Room</button>
+          <button onClick={handleOrder}>Place Order</button>
         </>
       )}
     </div>
   );
 }
 
-export default RoomBooking;
+export default RestaurantOrders;

@@ -41,7 +41,7 @@ function RoomBooking() {
       const data = await response.json();
       if (data.bookingId) {
         alert('Room booked successfully');
-        navigate('/bill'); // Redirect to the bill page after successful booking
+        navigate('/guest'); // Redirect to the guest dashboard after successful booking
       } else {
         alert('Failed to book room');
       }

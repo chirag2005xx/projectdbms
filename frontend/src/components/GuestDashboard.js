@@ -45,6 +45,12 @@ function GuestDashboard() {
               </li>
             ))}
           </ul>
+          <h3>Order from Restaurant</h3>
+          <Link to="/restaurant-orders">Go to Restaurant Orders</Link>
+          <h3>Use Pool Facilities</h3>
+          <Link to="/pool-facilities">Go to Pool Facilities</Link>
+          <h3>Checkout</h3>
+          <Link to="/bill">Print Bill</Link>
         </>
       )}
     </div>

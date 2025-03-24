@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './PoolFacilities.css';
 
 function PoolFacilities() {
@@ -7,6 +8,7 @@ function PoolFacilities() {
   const [usageStartTime, setUsageStartTime] = useState('');
   const [usageEndTime, setUsageEndTime] = useState('');
   const [totalCost, setTotalCost] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch facilities
@@ -34,6 +36,7 @@ function PoolFacilities() {
       const data = await response.json();
       if (data.usageId) {
         alert('Facility usage recorded successfully');
+        navigate('/guest'); // Redirect to the guest dashboard after using a facility
       } else {
         alert('Failed to record facility usage');
       }
