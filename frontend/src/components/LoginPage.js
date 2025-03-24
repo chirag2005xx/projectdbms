@@ -7,16 +7,25 @@ function LoginPage() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    // Add authentication logic here
-    if (username === 'guest') {
-      navigate('/guest');
-    } else if (username === 'branch') {
-      navigate('/branch');
-    } else if (username === 'stakeholder') {
-      navigate('/stakeholder');
-    } else {
-      alert('Invalid credentials');
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('http://localhost:5005/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        localStorage.setItem('guestId', data.guestId);
+        navigate('/guest');
+      } else {
+        alert('Invalid credentials');
+      }
+    } catch (err) {
+      console.error('Error during login:', err);
+      alert('An error occurred during login');
     }
   };
 
