@@ -11,74 +11,86 @@ app.get('/', (req, res) => {
 });
 
 // Check if database is connected
-app.get('/db-check', (req, res) => {
-    db.ping(err => {
-        if (err) {
-            return res.status(500).send('Database NOT connected');
-        }
+app.get('/db-check', async (req, res) => {
+    try {
+        const [result] = await db.query('SELECT 1');
         res.send('Database connected successfully!');
-    });
+    } catch (err) {
+        console.error('Database connection error:', err);
+        res.status(500).send('Database NOT connected');
+    }
 });
 
-app.get('/test', (req, res) => {
-    db.query('SELECT NOW() AS currentTime', (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+app.get('/test', async (req, res) => {
+    try {
+        const [result] = await db.query('SELECT NOW() AS currentTime');
         res.json({ message: 'Connected to MySQL!', serverTime: result[0].currentTime });
-    });
+    } catch (err) {
+        console.error('Database query error:', err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Endpoint to fetch rooms
 app.get('/rooms', async (req, res) => {
     try {
-      const [rows] = await db.query("SELECT * FROM Room"); 
-      res.json(rows);
+        const [rows] = await db.query('SELECT * FROM Room');
+        res.json(rows);
     } catch (err) {
-      console.error("Database error:", err);
-      res.status(500).json({ error: "Database connection failed" });
+        console.error('Database error:', err);
+        res.status(500).json({ error: 'Database query failed' });
     }
-  });
-  
+});
 
 // Endpoint to fetch orders
-app.get('/orders', (req, res) => {
-    db.query('SELECT * FROM RestaurantOrder', (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(result);
-    });
+app.get('/orders', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM RestaurantOrder');
+        res.json(rows);
+    } catch (err) {
+        console.error('Database error:', err);
+        res.status(500).json({ error: 'Database query failed' });
+    }
 });
 
 // Endpoint to fetch facilities
-app.get('/facilities', (req, res) => {
-    db.query('SELECT * FROM Facility', (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(result);
-    });
+app.get('/facilities', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM Facility');
+        res.json(rows);
+    } catch (err) {
+        console.error('Database error:', err);
+        res.status(500).json({ error: 'Database query failed' });
+    }
 });
 
 // Endpoint to fetch branch stats
-app.get('/branch-stats', (req, res) => {
-    db.query('SELECT * FROM Branch', (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(result);
-    });
+app.get('/branch-stats', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM Branch');
+        res.json(rows);
+    } catch (err) {
+        console.error('Database error:', err);
+        res.status(500).json({ error: 'Database query failed' });
+    }
 });
 
 // Endpoint to fetch overall stats
-app.get('/overall-stats', (req, res) => {
-    db.query('SELECT * FROM (SELECT COUNT(*) AS totalBranches FROM Branch) AS BranchStats, (SELECT COUNT(*) AS totalRooms FROM Room) AS RoomStats, (SELECT COUNT(*) AS totalOccupiedRooms FROM Room WHERE AvailabilityStatus = 0) AS OccupiedRoomStats, (SELECT COUNT(*) AS totalOrders FROM RestaurantOrder) AS OrderStats, (SELECT SUM(TotalCost) AS totalRevenue FROM Booking) AS RevenueStats', (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+app.get('/overall-stats', async (req, res) => {
+    try {
+        const [result] = await db.query(`
+            SELECT 
+                (SELECT COUNT(*) FROM Branch) AS totalBranches,
+                (SELECT COUNT(*) FROM Room) AS totalRooms,
+                (SELECT COUNT(*) FROM Room WHERE AvailabilityStatus = 0) AS totalOccupiedRooms,
+                (SELECT COUNT(*) FROM RestaurantOrder) AS totalOrders,
+                (SELECT SUM(TotalCost) FROM Booking) AS totalRevenue
+        `);
         res.json(result[0]);
-    });
+    } catch (err) {
+        console.error('Database error:', err);
+        res.status(500).json({ error: 'Database query failed' });
+    }
 });
 
 app.listen(5005, () => console.log('Server running on port 5005'));
