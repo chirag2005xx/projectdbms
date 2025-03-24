@@ -1,24 +1,26 @@
-import { useState, useEffect } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import LoginPage from './components/LoginPage';
+import GuestDashboard from './components/GuestDashboard';
+import BranchDashboard from './components/BranchDashboard';
+import StakeholderDashboard from './components/StakeholderDashboard';
+import RoomBooking from './components/RoomBooking';
+import RestaurantOrders from './components/RestaurantOrders';
+import PoolFacilities from './components/PoolFacilities';
 
 function App() {
-  const [data, setData] = useState(null);
-
-  useEffect(() => {
-    fetch('http://localhost:5005/test')
-      .then(res => res.json())
-      .then(data => setData(data))
-      .catch(err => console.error('Error fetching data:', err));
-  }, []);
-
   return (
-    <div>
-      <h1>React + Express + MySQL Test</h1>
-      {data ? (
-        <p>{data.message} | Server Time: {data.serverTime}</p>
-      ) : (
-        <p>Loading...</p>
-      )}
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/guest" element={<GuestDashboard />} />
+        <Route path="/branch" element={<BranchDashboard />} />
+        <Route path="/stakeholder" element={<StakeholderDashboard />} />
+        <Route path="/room-booking" element={<RoomBooking />} />
+        <Route path="/restaurant-orders" element={<RestaurantOrders />} />
+        <Route path="/pool-facilities" element={<PoolFacilities />} />
+      </Routes>
+    </Router>
   );
 }
 
